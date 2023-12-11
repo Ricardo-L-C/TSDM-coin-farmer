@@ -12,22 +12,22 @@ import json, random, requests, time
 from typing import List
 
 # ======== CONSTANT ========
-sign_url = 'https://www.tsdm39.net/plugin.php?id=dsu_paulsign:sign'
-work_url = 'https://www.tsdm39.net/plugin.php?id=np_cliworkdz:work'
-login_url = 'https://www.tsdm39.net/member.php?mod=logging&action=login'
+sign_url = "https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign"
+work_url = "https://www.tsdm39.com/plugin.php?id=np_cliworkdz:work"
+login_url = "https://www.tsdm39.com/member.php?mod=logging&action=login"
 
-tsdm_domain = ".tsdm39.net"
-s1_domain = "bbs.saraba1st.com"
+tsdm_domain = ".tsdm39.com"
 
 
 # ========= COOKIE ========
+
 
 def get_cookies_all():
     """从文件读取所有cookies
     { username: [cookie_list] }
     """
     try:
-        with open('cookies.json', 'r', encoding='utf-8') as json_file:
+        with open("cookies.json", "r", encoding="utf-8") as json_file:
             data = json.load(json_file)
             return data
 
@@ -38,7 +38,7 @@ def get_cookies_all():
 
 def get_cookies_by_domain(domain: str):
     """从所有cookie里分离出指定域名的cookie
-    domain: cookie_list domain, (".tsdm39.net")
+    domain: cookie_list domain, (".tsdm39.com")
     """
     cookies_all = get_cookies_all()  # { username: [cookie_list] }
     domain_cookies = {}
@@ -49,7 +49,7 @@ def get_cookies_by_domain(domain: str):
 
         # 同一个用户名下可能有多个网站的cookie
         for cookie in curr_user_cookies:
-            if cookie['domain'] == domain:
+            if cookie["domain"] == domain:
                 curr_user_cookies_domained.append(cookie)
 
         if curr_user_cookies_domained != []:
@@ -60,20 +60,21 @@ def get_cookies_by_domain(domain: str):
 
 # ======= WORK ======
 
+
 def work_single_post(cookie: List):
     """用post方式为一个账户打工
     cookie_list: List[Dict]
     """
-    cookie_serialized = "; ".join([i['name'] + "=" + i['value'] for i in cookie])
+    cookie_serialized = "; ".join([i["name"] + "=" + i["value"] for i in cookie])
 
     # 必须要这个content-type, 否则没法接收
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-        'cookie_list': cookie_serialized,
-        'connection': 'Keep-Alive',
-        'x-requested-with': 'XMLHttpRequest',
-        'referer': 'https://www.tsdm39.net/plugin.php?id=np_cliworkdz:work',
-        'content-type': 'application/x-www-form-urlencoded'
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
+        "cookie_list": cookie_serialized,
+        "connection": "Keep-Alive",
+        "x-requested-with": "XMLHttpRequest",
+        "referer": "https://www.tsdm39.com/plugin.php?id=np_cliworkdz:work",
+        "content-type": "application/x-www-form-urlencoded",
     }
 
     # 打工之前必须访问过一次网页
@@ -97,8 +98,6 @@ def work_single_post(cookie: List):
             break
         elif int(ad_feedback.text) >= 6:  # 已点击6次, 停止
             break
-        else:
-            continue
 
     getcre_response = requests.post(work_url, data="act=getcre", headers=headers)
 
@@ -110,7 +109,7 @@ def work_single_post(cookie: List):
     elif "请先登录再进行点击任务" in getcre_response.text:
         print("打工失败, cookie失效...")
     elif "服务器负荷较重" in getcre_response.text:
-        print("打工失败, TSDM:\"服务器负荷较重，操作超时\"...")
+        print('打工失败, TSDM:"服务器负荷较重，操作超时"...')
     else:
         print("======未知原因打工失败, 已保存response=======")
         print("打工", getcre_response.text)
