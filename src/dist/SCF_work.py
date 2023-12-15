@@ -38,7 +38,6 @@ logging.basicConfig(
 
 
 WORK_URL = "https://www.tsdm39.com/plugin.php?id=np_cliworkdz:work"
-TSDM_DOMAIN = ".tsdm39.com"
 TSDM_COOKIE_FILE = "tsdm_cookies.json"
 GET_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -112,7 +111,7 @@ def get_cookies_by_domain(domain: str):
 
 def work_single_post(cookies: List):
     """用post方式为一个账户打工
-    cookie_list: List[Dict]
+    cookies: List[{k: v}]
     """
     session = requests.Session()
     session.headers.update(GET_HEADERS)
@@ -154,7 +153,8 @@ def work_single_post(cookies: List):
     if "您已经成功领取了奖励天使币" in res.text:
         logging.info("打工成功")
         return True
-    elif "作弊" in res.text:
+
+    if "作弊" in res.text:
         logging.error("打工失败, 作弊判定, 重试...")
     elif "请先登录再进行点击任务" in res.text:
         logging.error("打工失败, cookie失效...")
@@ -181,6 +181,7 @@ def work_multi_post():
         try:
             if work_single_post(cookies[user]):
                 logging.info(f"user: {user}, 打工完成")
+                time.sleep(random.uniform(0.5, 1))
             else:
                 logging.error(f"user: {user}, 打工失败")
                 all_success = False
