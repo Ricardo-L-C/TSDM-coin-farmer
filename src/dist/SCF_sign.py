@@ -82,14 +82,14 @@ POST_HEADERS = {
 }
 
 
-def get_cookies_all():
+def get_cookies_all() -> dict:
     """从文件读取所有cookies
     { username: [cookie_list] }
     """
     p = Path(TSDM_COOKIE_FILE)
     if not p.exists():
         logging.error(f"文件: {p} 不存在")
-        return None
+        raise FileNotFoundError(f"文件: {p} 不存在")
     with open(TSDM_COOKIE_FILE, "r", encoding="utf-8") as json_file:
         return json.load(json_file)
 
@@ -98,7 +98,7 @@ def get_cookies_all():
 sign_page_with_param = "https://www.tsdm39.com/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1"
 
 
-def sign_single_post(cookies: List):
+def sign_single_post(cookies: List) -> bool:
     """用post方式为一个账户签到
     cookies: List[{k: v}]
     """
@@ -149,12 +149,8 @@ def sign_single_post(cookies: List):
     return False
 
 
-def sign_multi_post():
+def sign_multi_post() -> None:
     cookies = get_cookies_all()
-    if not cookies:
-        logging.error("读取cookies文件异常")
-        return False
-
     all_success = True
 
     for user in cookies.keys():
@@ -170,8 +166,9 @@ def sign_multi_post():
             logging.error(f"user: {user}, 抛出异常: {e}")
             all_success = False
 
-    return all_success
+    if not all_success:
+        raise Exception("签到存在失败")
 
 
-def main_handler(event, context):
-    return sign_multi_post()
+def main_handler(event, context) -> None:
+    sign_multi_post()
